@@ -1,0 +1,6 @@
+{
+  "name": "Shield Force",
+  "description": "2D run-and-gun action platformer featuring shield throw combat, 60 FPS rendering, multi-phase bosses, and upgrades.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

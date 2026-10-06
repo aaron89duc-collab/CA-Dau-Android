@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Glow effect behind shield -->
+    <path
+        android:fillColor="#3300B4D8"
+        android:pathData="M54,21 A33,33 0 1,0 54.01,21 Z" />
+    <!-- Outer Red Ring -->
+    <path
+        android:fillColor="#D90429"
+        android:pathData="M54,24 A30,30 0 1,0 54.01,24 Z" />
+    <!-- White Ring -->
+    <path
+        android:fillColor="#EDF2F4"
+        android:pathData="M54,30.5 A23.5,23.5 0 1,0 54.01,30.5 Z" />
+    <!-- Middle Red Ring -->
+    <path
+        android:fillColor="#D90429"
+        android:pathData="M54,37 A17,17 0 1,0 54.01,37 Z" />
+    <!-- Center Blue Circle -->
+    <path
+        android:fillColor="#0077B6"
+        android:pathData="M54,43.5 A10.5,10.5 0 1,0 54.01,43.5 Z" />
+    <!-- Five-point White Star in center -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,45.5 L56.3,51.5 L62.5,51.8 L57.6,55.5 L59.3,61.5 L54,58 L48.7,61.5 L50.4,55.5 L45.5,51.8 L51.7,51.5 Z" />
+    <!-- Shield Metallic Highlight -->
+    <path
+        android:fillColor="#25FFFFFF"
+        android:pathData="M54,24 A30,30 0 0,1 84,54 L54,54 Z" />
+</vector>
