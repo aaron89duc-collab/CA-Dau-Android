@@ -47,7 +47,7 @@ class GameEngine(
 
     val camera = Camera2D()
     val levelEnv = LevelEnvironment(pool, audio)
-    val player = Player(pool, audio, saveManager)
+    val player = Player(pool, audio, saveManager, context)
     val boss = BossIronBeast(8000f, levelEnv.groundY, pool, audio)
 
     val enemies = ArrayList<EnemyBase>()
@@ -176,12 +176,17 @@ class GameEngine(
         }
 
         // 6. Update Boss if active
-        if (isBossFightActive && !boss.isDead) {
-            boss.update(player.x, player.y, dt, levelEnv.groundY)
-            if (boss.isDead) {
+        if (isBossFightActive) {
+            if (!boss.isDead) {
+                boss.update(player.x, player.y, dt, levelEnv.groundY)
+            }
+            if (boss.isDead && !isVictory) {
                 isVictory = true
+                player.state = PlayerState.Victory
                 saveManager.setLevelCompleted(1)
-                saveManager.addCoins(200) // Level completion bonus
+                saveManager.addCoins(250) // Level completion bonus
+                audio.playVictoryFanfare()
+                pool.spawnDamageNumber(boss.x, boss.y - 100f, "VICTORY! MISSION ACCOMPLISHED!", 0xFFFFD700.toInt())
             }
         }
 

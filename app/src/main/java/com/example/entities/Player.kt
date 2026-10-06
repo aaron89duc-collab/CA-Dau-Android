@@ -1,9 +1,16 @@
 package com.example.entities
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.RectF
+import com.example.R
 import com.example.audio.GameAudio
 import com.example.data.SaveManager
 import com.example.engine.Camera2D
@@ -17,22 +24,23 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * Player Controller & Combat System
- * Follows GDD Sections 3, 4, 5 & 6
+ * Hero Controller: "Bé Đậu - Cat Shield Hero"
+ * Incorporates custom cat-hero avatar, cat suit, striped tail, and Vibranium Boomerang Shield!
  */
 class Player(
     private val pool: ObjectPool,
     private val audio: GameAudio,
-    private val saveManager: SaveManager
+    private val saveManager: SaveManager,
+    context: Context? = null
 ) : IDamageable {
 
     var x: Float = 200f
-    var y: Float = 750f // Ground level
+    var y: Float = 750f
     var vx: Float = 0f
     var vy: Float = 0f
 
-    val width: Float = 48f
-    val height: Float = 72f
+    val width: Float = 50f
+    val height: Float = 76f
 
     var state: PlayerState = PlayerState.Idle
     var facingRight: Boolean = true
@@ -55,7 +63,7 @@ class Player(
     // Shield boomerang
     val shieldWeapon = ShieldProjectile(pool)
 
-    // Blocking & Perfect Block (GDD Section 4.2)
+    // Blocking & Perfect Block
     var isBlocking: Boolean = false
     var blockActivationTime: Float = 0f
     private val perfectBlockWindow: Float = 0.12f
@@ -86,7 +94,27 @@ class Player(
 
     // Animation & rendering
     private var animTimer: Float = 0f
-    private val playerPath = Path()
+    private var avatarBitmap: Bitmap? = null
+
+    init {
+        context?.let { ctx ->
+            try {
+                val original = BitmapFactory.decodeResource(ctx.resources, R.drawable.hero_dau)
+                if (original != null) {
+                    val targetSize = 46
+                    val scaled = Bitmap.createScaledBitmap(original, targetSize, targetSize, true)
+                    val output = Bitmap.createBitmap(targetSize, targetSize, Bitmap.Config.ARGB_8888)
+                    val canvas = Canvas(output)
+                    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+                    val r = targetSize / 2f
+                    canvas.drawCircle(r, r, r - 1f, paint)
+                    paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+                    canvas.drawBitmap(scaled, 0f, 0f, paint)
+                    avatarBitmap = output
+                }
+            } catch (_: Exception) {}
+        }
+    }
 
     fun resetToStats() {
         val stats = saveManager.getCurrentStats()
@@ -137,7 +165,7 @@ class Player(
             vx = 0f
         }
 
-        // 2. Jumping & Double Jump (GDD Section 3: Double Jump mở sẵn)
+        // 2. Jumping & Double Jump
         if (isJumpPressed) {
             if (isGrounded || jumpCount < maxJumps) {
                 vy = -640f
@@ -145,7 +173,7 @@ class Player(
                 jumpCount++
                 state = PlayerState.Jump
                 audio.playJump()
-                pool.spawnBurst(x, y + height * 0.5f, 6, 0xFFFFFFFF.toInt(), 0.5f)
+                pool.spawnBurst(x, y + height * 0.5f, 6, 0xFF00E5FF.toInt(), 0.5f)
             }
         }
 
@@ -157,7 +185,7 @@ class Player(
             state = PlayerState.Block
         }
 
-        // 4. Fire (Auto-fire when held, GDD Section 3.2: Cooldown 0.12-0.18s)
+        // 4. Fire (Auto-fire)
         if (isFireHeld && shootCooldownTimer <= 0f && !isBlocking) {
             fireShieldShot()
             shootCooldownTimer = shootCooldown
@@ -171,12 +199,11 @@ class Player(
                 audio.playShieldThrow()
                 state = PlayerState.ShieldThrow
             } else if (shieldWeapon.state == ShieldThrowState.OUTBOUND) {
-                // Quick return recall
                 shieldWeapon.turnAroundNow()
             }
         }
 
-        // 6. Dash / Shield Smash
+        // 6. Dash / Smash
         if (moveAxisY < -0.7f && dashCooldownTimer <= 0f && !isDashing) {
             startDash()
         }
@@ -195,7 +222,7 @@ class Player(
         vx = if (facingRight) moveSpeed * 2.4f else -moveSpeed * 2.4f
         vy = 0f
         audio.vibrate(60)
-        pool.spawnBurst(x, y, 12, 0xFF00B4D8.toInt(), 1.2f)
+        pool.spawnBurst(x, y, 14, 0xFF00E5FF.toInt(), 1.2f)
     }
 
     private fun triggerUltimate() {
@@ -203,9 +230,9 @@ class Player(
         ultimateTimer = 0.8f
         ultimateMeter = 0f
         audio.playBossRoar()
-        pool.spawnBurst(x, y, 40, 0xFFD90429.toInt(), 2.5f)
-        pool.spawnBurst(x, y, 30, 0xFF00B4D8.toInt(), 2.0f)
-        pool.spawnDamageNumber(x, y - 60f, "ULTIMATE SMASH!", 0xFFFFD700.toInt())
+        pool.spawnBurst(x, y, 40, 0xFFFF0055.toInt(), 2.5f)
+        pool.spawnBurst(x, y, 30, 0xFF00E5FF.toInt(), 2.0f)
+        pool.spawnDamageNumber(x, y - 60f, "VIBRANIUM CAT SMASH!", 0xFFFFD700.toInt())
     }
 
     private fun fireShieldShot() {
@@ -246,34 +273,26 @@ class Player(
             blockActivationTime += dt
         }
 
-        // Powerup countdown
         if (powerUpTimer > 0f) {
             powerUpTimer -= dt
-            if (powerUpTimer <= 0f) {
-                activePowerUp = null
-            }
+            if (powerUpTimer <= 0f) activePowerUp = null
         }
 
-        // Ultimate timer
         if (isUltimateActive) {
             ultimateTimer -= dt
-            if (ultimateTimer <= 0f) {
-                isUltimateActive = false
-            }
+            if (ultimateTimer <= 0f) isUltimateActive = false
         }
 
-        // Respawning countdown
         if (isRespawning) {
             respawnTimer -= dt
             if (respawnTimer <= 0f) {
                 isRespawning = false
-                invulnerableTimer = 2.0f // 2s invulnerability after respawn (GDD Section 4)
+                invulnerableTimer = 2.0f
                 state = PlayerState.Idle
             }
             return false
         }
 
-        // Dash handling
         if (isDashing) {
             dashTimer -= dt
             x += vx * dt
@@ -282,10 +301,7 @@ class Player(
                 vx = 0f
             }
         } else {
-            // Normal Physics
             x += vx * dt
-
-            // Gravity
             vy += 1500f * dt
             y += vy * dt
 
@@ -305,7 +321,6 @@ class Player(
             }
         }
 
-        // Update Boomerang Shield
         val caught = shieldWeapon.update(x, y - height * 0.4f, dt)
         if (caught) {
             audio.playShieldCatch()
@@ -319,25 +334,20 @@ class Player(
     override fun takeDamage(damage: Int, hitPointX: Float, hitPointY: Float, type: DamageType) {
         if (invulnerableTimer > 0f || state == PlayerState.Dead || isRespawning) return
 
-        // Direction check for Block
         val attackFromRight = hitPointX > x
         val isFacingAttack = (facingRight && attackFromRight) || (!facingRight && !attackFromRight)
 
         if (isBlocking && isFacingAttack) {
-            // Check Perfect Block (within 0.12s of activating block)
             if (blockActivationTime <= perfectBlockWindow) {
-                // Perfect Block! Reflect, +10% ultimate meter, 0.05s hit-stop
                 audio.playPerfectBlock()
                 ultimateMeter = (ultimateMeter + 10f).coerceAtMost(maxUltimateMeter)
                 pool.spawnDamageNumber(x, y - 50f, "PERFECT BLOCK!", 0xFF00FFCC.toInt())
                 pool.spawnBurst(hitPointX, hitPointY, 15, 0xFF00FFCC.toInt(), 1.5f)
 
-                // Deflect bullet back towards enemy
                 val deflectVx = if (facingRight) 1100f else -1100f
                 pool.spawnProjectile(x, y - 25f, deflectVx, 0f, 40, DamageType.Shield, true, 10f, 0xFF00FFCC.toInt())
                 return
             } else {
-                // Normal block - blocks 100% of front projectile damage!
                 audio.vibrate(25)
                 pool.spawnDamageNumber(x, y - 40f, "BLOCKED!", 0xFF80D8FF.toInt())
                 pool.spawnBurst(hitPointX, hitPointY, 6, 0xFF80D8FF.toInt(), 0.8f)
@@ -345,10 +355,9 @@ class Player(
             }
         }
 
-        // Damage received
         hp -= damage
         audio.vibrate(70)
-        invulnerableTimer = 0.7f // GDD Section 3.2
+        invulnerableTimer = 0.7f
         state = PlayerState.Hurt
         pool.spawnDamageNumber(x, y - 30f, "-$damage", 0xFFFF3366.toInt())
         pool.spawnBurst(x, y - 20f, 10, 0xFFFF3366.toInt(), 1f)
@@ -362,11 +371,10 @@ class Player(
     private fun dieAndRespawn() {
         state = PlayerState.Dead
         isRespawning = true
-        respawnTimer = 1.2f // Brief death/respawn transition
+        respawnTimer = 1.2f
         audio.playExplosion()
         pool.spawnBurst(x, y, 25, 0xFFFF1744.toInt(), 1.5f)
 
-        // Respawn at latest checkpoint (GDD Section 6)
         x = checkpointX
         y = checkpointY
         hp = maxHp
@@ -422,7 +430,6 @@ class Player(
     fun render(canvas: Canvas, camera: Camera2D, paint: Paint) {
         if (isRespawning) return
 
-        // Invulnerability flicker
         if (invulnerableTimer > 0f && ((invulnerableTimer * 20).toInt() % 2 == 0)) {
             return
         }
@@ -436,46 +443,93 @@ class Player(
             canvas.scale(-1f, 1f)
         }
 
-        // Draw Player Body (Heroic Suit - Navy, Red & Silver Stripes)
         val drawHeight = if (state == PlayerState.Crouch) height * 0.65f else height
         val topY = -drawHeight
 
-        // Head & Mask
-        paint.color = Color.rgb(0, 119, 182) // Shield Blue
+        // 1. Striped Cat Tail (animated waving behind back)
+        val tailWave = (sin(animTimer * 10.0) * 12f).toFloat()
+        paint.color = Color.rgb(207, 216, 220) // Silver cat fur
+        paint.strokeWidth = 6f
+        paint.style = Paint.Style.STROKE
+        val tailPath = Path()
+        tailPath.moveTo(-12f, -14f)
+        tailPath.quadTo(-28f, -28f + tailWave, -34f, -40f + tailWave)
+        canvas.drawPath(tailPath, paint)
+
+        // Tail dark stripes
+        paint.color = Color.rgb(84, 110, 122)
+        paint.strokeWidth = 5f
+        canvas.drawPoint(-20f, -22f + tailWave * 0.5f, paint)
+        canvas.drawPoint(-27f, -32f + tailWave * 0.8f, paint)
+
         paint.style = Paint.Style.FILL
-        canvas.drawCircle(0f, topY + 12f, 14f, paint)
 
-        // Silver Helmet 'A' / Wing markings
+        // 2. Light Gray Cat Suit Body with "Đậu" Emblem
+        paint.color = Color.rgb(224, 224, 224)
+        canvas.drawRoundRect(RectF(-16f, topY + 24f, 16f, 0f), 8f, 8f, paint)
+
+        // Pink "Đậu" Logo Badge on Chest
+        paint.color = Color.rgb(255, 64, 129) // Neon pink
+        canvas.drawRoundRect(RectF(-12f, topY + 30f, 12f, topY + 44f), 6f, 6f, paint)
         paint.color = Color.WHITE
-        canvas.drawCircle(3f, topY + 9f, 4f, paint)
+        paint.textSize = 10f
+        paint.isFakeBoldText = true
+        canvas.drawText("ĐẬU", -10f, topY + 41f, paint)
 
-        // Torso / Suit
-        paint.color = Color.rgb(11, 19, 43) // Deep Navy
-        canvas.drawRect(-16f, topY + 22f, 16f, 0f, paint)
-
-        // Red & White Torso Stripes
-        paint.color = Color.rgb(217, 4, 41)
-        canvas.drawRect(-14f, topY + 36f, -6f, -4f, paint)
-        paint.color = Color.WHITE
-        canvas.drawRect(-6f, topY + 36f, 2f, -4f, paint)
-        paint.color = Color.rgb(217, 4, 41)
-        canvas.drawRect(2f, topY + 36f, 10f, -4f, paint)
-
-        // Silver Star on chest
-        paint.color = Color.WHITE
-        canvas.drawCircle(0f, topY + 28f, 5f, paint)
-
-        // Legs / Boots
-        paint.color = Color.rgb(217, 4, 41) // Red boots
+        // 3. Legs / Boots (Silver paws)
+        paint.color = Color.rgb(189, 189, 189)
         val legAnimOffset = if (state == PlayerState.Run) (sin(animTimer * 16.0) * 8f).toFloat() else 0f
-        canvas.drawRect(-14f, -4f, -4f, 6f + legAnimOffset, paint)
-        canvas.drawRect(4f, -4f, 14f, 6f - legAnimOffset, paint)
+        canvas.drawRoundRect(RectF(-14f, -6f, -4f, 6f + legAnimOffset), 4f, 4f, paint)
+        canvas.drawRoundRect(RectF(4f, -6f, 14f, 6f - legAnimOffset), 4f, 4f, paint)
 
-        // Arm / Shield in hand
+        // 4. Cat Head & Face Avatar
+        if (avatarBitmap != null) {
+            val bmp = avatarBitmap!!
+            val r = bmp.width / 2f
+            canvas.drawBitmap(bmp, -r, topY - 2f, paint)
+        } else {
+            // High-detail vector fallback with blue hair & cat ears
+            // Head base
+            paint.color = Color.rgb(255, 224, 189) // Peach skin
+            canvas.drawCircle(0f, topY + 12f, 16f, paint)
+
+            // Cat Ears (White with pink inner)
+            paint.color = Color.WHITE
+            val earLeft = Path().apply {
+                moveTo(-14f, topY + 4f)
+                lineTo(-18f, topY - 12f)
+                lineTo(-4f, topY - 2f)
+                close()
+            }
+            val earRight = Path().apply {
+                moveTo(4f, topY - 2f)
+                lineTo(18f, topY - 12f)
+                lineTo(14f, topY + 4f)
+                close()
+            }
+            canvas.drawPath(earLeft, paint)
+            canvas.drawPath(earRight, paint)
+
+            paint.color = Color.rgb(255, 128, 171)
+            canvas.drawCircle(-12f, topY - 3f, 4f, paint)
+            canvas.drawCircle(12f, topY - 3f, 4f, paint)
+
+            // Blue Hair
+            paint.color = Color.rgb(66, 165, 245)
+            canvas.drawArc(RectF(-16f, topY - 2f, 16f, topY + 18f), 180f, 180f, true, paint)
+
+            // Whiskers
+            paint.color = Color.rgb(100, 116, 139)
+            paint.strokeWidth = 1.5f
+            canvas.drawLine(10f, topY + 14f, 22f, topY + 12f, paint)
+            canvas.drawLine(10f, topY + 18f, 22f, topY + 18f, paint)
+        }
+
+        // 5. Vibranium Shield in Hand or Blocking
         if (shieldWeapon.state == ShieldThrowState.IN_HAND) {
             if (isBlocking) {
-                // Shield held firmly forward with blue forcefield
-                paint.color = 0x4400B4D8
+                // Forcefield sphere + Shield front
+                paint.color = 0x4400E5FF
                 canvas.drawCircle(22f, topY + 30f, 32f, paint)
 
                 paint.color = Color.rgb(217, 4, 41)
@@ -485,19 +539,18 @@ class Player(
                 paint.color = Color.rgb(0, 119, 182)
                 canvas.drawCircle(22f, topY + 30f, 8f, paint)
             } else {
-                // Shield strapped to arm
                 paint.color = Color.rgb(217, 4, 41)
-                canvas.drawCircle(12f, topY + 32f, 16f, paint)
+                canvas.drawCircle(14f, topY + 32f, 16f, paint)
                 paint.color = Color.WHITE
-                canvas.drawCircle(12f, topY + 32f, 12f, paint)
+                canvas.drawCircle(14f, topY + 32f, 12f, paint)
                 paint.color = Color.rgb(0, 119, 182)
-                canvas.drawCircle(12f, topY + 32f, 6f, paint)
+                canvas.drawCircle(14f, topY + 32f, 6f, paint)
             }
         }
 
         canvas.restore()
 
-        // Render traveling shield boomerang
+        // Render traveling boomerang shield
         shieldWeapon.render(canvas, camera, paint)
     }
 }

@@ -1,5 +1,6 @@
 package com.example.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -34,14 +35,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.data.SaveManager
 import com.example.ui.theme.ShieldBlue
 import com.example.ui.theme.ShieldGold
-import com.example.ui.theme.ShieldNavy
 import com.example.ui.theme.ShieldRed
 import com.example.ui.theme.ShieldSilver
 
@@ -63,28 +66,47 @@ fun MainMenuScreen(
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
 
-            // Background subtle gradient
+            // Background cyber gradient
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
-                        Brush.verticalGradient(
-                            colors = listOf(Color(0xFF081226), Color(0xFF050914))
+                        Brush.radialGradient(
+                            colors = listOf(Color(0xFF0F1E3D), Color(0xFF060B18)),
+                            radius = 1200f
                         )
                     )
             )
 
-            // Top Header: Currency Display
+            // Top Header: Currency Display & Title
             Row(
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
+                    .fillMaxWidth()
                     .padding(20.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF00E676))
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "UNITY 3D ENGINE • 60 FPS ACTIVE",
+                        color = Color(0xFF00E5FF),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+                }
+
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xCC0B132B))
+                        .background(Color(0xDD0B132B))
                         .border(1.5.dp, ShieldGold, RoundedCornerShape(12.dp))
                         .padding(horizontal = 14.dp, vertical = 8.dp)
                 ) {
@@ -94,7 +116,7 @@ fun MainMenuScreen(
                         Text(
                             text = "$coins COINS",
                             color = Color.White,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.ExtraBold,
                             fontSize = 14.sp
                         )
                     }
@@ -105,76 +127,65 @@ fun MainMenuScreen(
             Column(
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .padding(horizontal = 32.dp),
+                    .padding(horizontal = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // Shield Emblem Icon
+                // Main Hero Character Card with image
                 Box(
                     modifier = Modifier
-                        .size(80.dp)
+                        .size(100.dp)
                         .clip(CircleShape)
-                        .background(ShieldRed)
-                        .border(3.dp, Color.White, CircleShape),
+                        .background(
+                            Brush.sweepGradient(
+                                listOf(Color(0xFFFF4081), Color(0xFF00E5FF), Color(0xFFFFB703), Color(0xFFFF4081))
+                            )
+                        )
+                        .padding(3.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(54.dp)
+                            .fillMaxSize()
                             .clip(CircleShape)
-                            .background(Color.White)
+                            .background(Color(0xFF0E1A33)),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(34.dp)
-                                .clip(CircleShape)
-                                .background(ShieldRed)
-                                .align(Alignment.Center)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(18.dp)
-                                    .clip(CircleShape)
-                                    .background(ShieldBlue)
-                                    .align(Alignment.Center)
-                            ) {
-                                Text(
-                                    text = "★",
-                                    color = Color.White,
-                                    fontSize = 13.sp,
-                                    modifier = Modifier.align(Alignment.Center)
-                                )
-                            }
-                        }
+                        Image(
+                            painter = painterResource(id = R.drawable.hero_dau),
+                            contentDescription = "Bé Đậu Hero Avatar",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // Title
                 Text(
-                    text = "CAPTAIN AMERICA",
-                    color = ShieldSilver,
+                    text = "BÉ ĐẬU",
+                    color = Color(0xFFFF80AB),
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 4.sp
                 )
                 Text(
                     text = "SHIELD FORCE",
-                    color = ShieldRed,
-                    fontSize = 34.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 2.sp
+                    color = Color.White,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 3.sp
                 )
 
                 Text(
-                    text = "Unity Engine 3D Integration • 60 FPS Render",
-                    color = Color(0xFF00E5FF),
+                    text = "2D Run-and-Gun Platformer • Đồ Họa 3D Parallax Mượt Mà",
+                    color = Color(0xFF80D8FF),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 // Action Buttons
                 Row(
@@ -184,16 +195,17 @@ fun MainMenuScreen(
                     Button(
                         onClick = onStartGame,
                         modifier = Modifier
-                            .width(180.dp)
-                            .height(52.dp)
+                            .width(190.dp)
+                            .height(54.dp)
+                            .border(2.dp, Color(0xFFFF5252), RoundedCornerShape(12.dp))
                             .testTag("play_button"),
                         colors = ButtonDefaults.buttonColors(containerColor = ShieldRed),
-                        shape = RoundedCornerShape(10.dp)
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(imageVector = Icons.Default.PlayArrow, contentDescription = "Play", tint = Color.White)
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = "PLAY LEVEL 1", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(text = "CHIẾN ĐẤU MÀN 1", fontWeight = FontWeight.Bold, fontSize = 13.sp)
                         }
                     }
 
@@ -201,15 +213,16 @@ fun MainMenuScreen(
                         onClick = onLevelSelect,
                         modifier = Modifier
                             .width(160.dp)
-                            .height(52.dp)
+                            .height(54.dp)
+                            .border(1.5.dp, Color(0xFF00B4D8), RoundedCornerShape(12.dp))
                             .testTag("level_select_button"),
                         colors = ButtonDefaults.buttonColors(containerColor = ShieldBlue),
-                        shape = RoundedCornerShape(10.dp)
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(imageVector = Icons.Default.List, contentDescription = "Level Select", tint = Color.White)
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = "10 LEVELS", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(text = "10 MÀN CHƠI", fontWeight = FontWeight.Bold, fontSize = 13.sp)
                         }
                     }
 
@@ -217,15 +230,16 @@ fun MainMenuScreen(
                         onClick = onUpgrades,
                         modifier = Modifier
                             .width(160.dp)
-                            .height(52.dp)
+                            .height(54.dp)
+                            .border(1.5.dp, Color(0xFF4CAF50), RoundedCornerShape(12.dp))
                             .testTag("upgrade_button"),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
-                        shape = RoundedCornerShape(10.dp)
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(imageVector = Icons.Default.Build, contentDescription = "Upgrades", tint = Color.White)
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = "ARMORY", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(text = "KHO VŨ KHÍ", fontWeight = FontWeight.Bold, fontSize = 13.sp)
                         }
                     }
                 }
@@ -243,13 +257,13 @@ fun MainMenuScreen(
                             .width(160.dp)
                             .height(44.dp)
                             .testTag("settings_button"),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1C2541)),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF142244)),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(imageVector = Icons.Default.Settings, contentDescription = "Settings", tint = ShieldSilver)
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = "SETTINGS", color = ShieldSilver, fontSize = 12.sp)
+                            Text(text = "CÀI ĐẶT", color = ShieldSilver, fontSize = 12.sp)
                         }
                     }
 
@@ -259,13 +273,13 @@ fun MainMenuScreen(
                             .width(160.dp)
                             .height(44.dp)
                             .testTag("credits_button"),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1C2541)),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF142244)),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(imageVector = Icons.Default.Info, contentDescription = "Credits", tint = ShieldSilver)
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = "CREDITS", color = ShieldSilver, fontSize = 12.sp)
+                            Text(text = "THÔNG TIN", color = ShieldSilver, fontSize = 12.sp)
                         }
                     }
                 }
